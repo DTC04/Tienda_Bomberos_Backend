@@ -23,13 +23,21 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return response()->json(['ok' => true]);
+        // Generate Sanctum API token for cross-domain Bearer auth
+        $user = Auth::user();
+        $token = $user->createToken('app-token')->plainTextToken;
+
+        return response()->json(['ok' => true, 'token' => $token]);
     }
 
     public function logout(Request $request)
     {
-        Auth::guard('web')->logout();
+        // Revoke all tokens for this user
+        if ($request->user()) {
+            $request->user()->tokens()->delete();
+        }
 
+        Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
