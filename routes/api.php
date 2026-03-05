@@ -18,12 +18,9 @@ use App\Http\Controllers\OportunidadController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\Api\EstadoController;
 use App\Http\Controllers\Api\CotizacionController;
-use App\Http\Controllers\Api\CuttingOrderController;
 use App\Http\Controllers\AlertasController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\Api\OrderRequestController;
-use App\Http\Controllers\Api\PackageController;
-
 use App\Http\Controllers\ContactoController;
 use App\Http\Controllers\ProveedorController;
 
@@ -236,52 +233,6 @@ Route::put('/cotizacion-items/{item}/personalizacion', [\App\Http\Controllers\Ap
 Route::post('/cotizacion-items/{item}/personalizacion/upload', [\App\Http\Controllers\Api\CotizacionItemPersonalizacionController::class, 'uploadMatrizImage']);
 Route::post('/cotizacion-items/{item}/personalizacion/upload-names', [\App\Http\Controllers\Api\CotizacionItemPersonalizacionController::class, 'uploadNames']);
 
-// Simple test route without authentication
-Route::get('/test', function () {
-    return response()->json([
-        'success' => true,
-        'message' => 'API is working',
-        'timestamp' => now()
-    ]);
-});
-
-// Test route for debugging cutting orders
-Route::get('/test-cutting-orders', function () {
-    try {
-        $count = \App\Models\CuttingOrder::count();
-        $orders = \App\Models\CuttingOrder::all(['id', 'code', 'status'])->toArray();
-        return response()->json([
-            'success' => true,
-            'count' => $count,
-            'orders' => $orders,
-            'message' => 'API is working'
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage()
-        ]);
-    }
-});
-
-// Cutting Orders (Órdenes de Corte)
-Route::get('/cutting-orders/next-code/generate', [CuttingOrderController::class, 'getNextCode']);
-Route::get('/cutting-orders', [CuttingOrderController::class, 'index']);
-Route::post('/cutting-orders', [CuttingOrderController::class, 'store']);
-Route::get('/cutting-orders/{id}', [CuttingOrderController::class, 'show']);
-Route::put('/cutting-orders/{id}', [CuttingOrderController::class, 'update']);
-Route::put('/cutting-orders/{id}/partial-qc', [CuttingOrderController::class, 'updatePartialQc']);
-Route::delete('/cutting-orders/{id}', [CuttingOrderController::class, 'destroy']);
-
-// Packages (Paquetes)
-Route::get('/packages/next-code', [PackageController::class, 'getNextCode']);
-Route::get('/packages', [PackageController::class, 'index']);
-Route::post('/packages', [PackageController::class, 'store']);
-Route::put('/packages/{package}', [PackageController::class, 'updateStatus']); // General update
-Route::put('/packages/{package}/status', [PackageController::class, 'updateStatus']);
-Route::put('/packages/{package}/partial-qc', [PackageController::class, 'updatePartialQc']); // QC parcial
-Route::post('/packages/{package}/quality-control', [PackageController::class, 'registerQualityControl']);
-Route::get('/packages/{package}/pdf', [PackageController::class, 'exportPdf']);
 Route::get('/factory-logs', [App\Http\Controllers\Api\FactoryLogController::class, 'index']);
 Route::get('/cotizaciones/{cotizacion}/pdf', [CotizacionController::class, 'exportPdf']);
 Route::get('/insumos', [App\Http\Controllers\Api\InsumoController::class, 'index']);
