@@ -139,11 +139,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('eventos', EventoController::class);
 });
 
-// AUTH - Estas rutas necesitan estar en el grupo de Sanctum para sesiones SPA
+// AUTH - Login necesita 'web' para sesión/CSRF. Las demás usan Bearer token.
 Route::middleware('web')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login']);
-    Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-    Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
+});
+
+// Estas rutas usan Bearer token (auth:sanctum) — NO necesitan sesión web
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
 });
 
 Route::get('/login', function () {
