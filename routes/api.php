@@ -219,23 +219,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/order-requests/{id}/dispatch-pdf', [OrderRequestController::class, 'downloadDispatchPdf']);
 });
 
-// Cotizaciones
+// Cotizaciones options (no requiere autenticación)
 Route::get('/cotizaciones/options', [\App\Http\Controllers\Api\CotizacionOptionsController::class, 'index']);
 
-Route::get('/cotizaciones', [CotizacionController::class, 'index']);
-Route::post('/cotizaciones', [CotizacionController::class, 'store']);
-Route::get('/cotizaciones/{cotizacion}', [CotizacionController::class, 'show']);
-Route::patch('/cotizaciones/{cotizacion}', [CotizacionController::class, 'update']);
-Route::delete('/cotizaciones/{cotizacion}', [CotizacionController::class, 'destroy']);
-Route::patch('/cotizaciones/{cotizacion}/estado', [CotizacionController::class, 'updateEstado']);
-Route::patch('/cotizaciones/{cotizacion}/personalizacion-completada', [CotizacionController::class, 'marcarPersonalizacionCompletada']);
-Route::post('/cotizaciones/{cotizacion}/gestion', [CotizacionController::class, 'storeGestion']);
-Route::post('/cotizaciones/{cotizacion}/archivos', [CotizacionController::class, 'uploadArchivo']);
+// Cotizaciones (requieren autenticación para $request->user())
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/cotizaciones', [CotizacionController::class, 'index']);
+    Route::post('/cotizaciones', [CotizacionController::class, 'store']);
+    Route::get('/cotizaciones/{cotizacion}', [CotizacionController::class, 'show']);
+    Route::patch('/cotizaciones/{cotizacion}', [CotizacionController::class, 'update']);
+    Route::delete('/cotizaciones/{cotizacion}', [CotizacionController::class, 'destroy']);
+    Route::patch('/cotizaciones/{cotizacion}/estado', [CotizacionController::class, 'updateEstado']);
+    Route::patch('/cotizaciones/{cotizacion}/personalizacion-completada', [CotizacionController::class, 'marcarPersonalizacionCompletada']);
+    Route::post('/cotizaciones/{cotizacion}/gestion', [CotizacionController::class, 'storeGestion']);
+    Route::post('/cotizaciones/{cotizacion}/archivos', [CotizacionController::class, 'uploadArchivo']);
 
-Route::get('/cotizacion-items/{item}/personalizacion', [\App\Http\Controllers\Api\CotizacionItemPersonalizacionController::class, 'show']);
-Route::put('/cotizacion-items/{item}/personalizacion', [\App\Http\Controllers\Api\CotizacionItemPersonalizacionController::class, 'update']);
-Route::post('/cotizacion-items/{item}/personalizacion/upload', [\App\Http\Controllers\Api\CotizacionItemPersonalizacionController::class, 'uploadMatrizImage']);
-Route::post('/cotizacion-items/{item}/personalizacion/upload-names', [\App\Http\Controllers\Api\CotizacionItemPersonalizacionController::class, 'uploadNames']);
+    Route::get('/cotizacion-items/{item}/personalizacion', [\App\Http\Controllers\Api\CotizacionItemPersonalizacionController::class, 'show']);
+    Route::put('/cotizacion-items/{item}/personalizacion', [\App\Http\Controllers\Api\CotizacionItemPersonalizacionController::class, 'update']);
+    Route::post('/cotizacion-items/{item}/personalizacion/upload', [\App\Http\Controllers\Api\CotizacionItemPersonalizacionController::class, 'uploadMatrizImage']);
+    Route::post('/cotizacion-items/{item}/personalizacion/upload-names', [\App\Http\Controllers\Api\CotizacionItemPersonalizacionController::class, 'uploadNames']);
+});
 
 Route::get('/factory-logs', [App\Http\Controllers\Api\FactoryLogController::class, 'index']);
 Route::get('/cotizaciones/{cotizacion}/pdf', [CotizacionController::class, 'exportPdf']);
