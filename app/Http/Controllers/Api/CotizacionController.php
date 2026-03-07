@@ -391,8 +391,8 @@ class CotizacionController extends Controller
     {
         $cotizacion->load(['cliente.parent', 'oportunidad.contacto', 'ejecutivo', 'estado', 'detalles']);
 
-        // Usar el ejecutivo almacenado en la cotización (no depende de Bearer token del request)
-        $vendedor = $cotizacion->ejecutivo;
+        // Usar el ejecutivo almacenado en la cotización (o el usuario logueado como fallback)
+        $vendedor = $cotizacion->ejecutivo ?? request()->user();
 
         // Lógica para nombre completo y comuna
         $cliente = $cotizacion->cliente;
