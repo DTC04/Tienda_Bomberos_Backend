@@ -48,16 +48,9 @@ class RedBomberosSeeder extends Seeder
                 // 1: Cuerpo de Bomberos (e.g., "Arica")
                 // 2: URL
                 // 3: Logo Path
-                // 4: RUT
-                // 5: Numero de Socio
-                // 6: Fecha de Fundacion (dd-mm-yyyy)
-                // 7: Direccion
-                // 8: Telefono
-                // 9: Superintendente
-                // 10: Comandante
-                // 11: Numero de Companias
 
                 $nombreCuerpo = $data[1] ?? null;
+                $logoPath = trim($data[3] ?? '');
                 $rut = $data[4] ?? null;
                 $fechaFundacionRaw = $data[6] ?? null;
                 $direccion = $data[7] ?? null;
@@ -113,6 +106,11 @@ class RedBomberosSeeder extends Seeder
                     // User said "quiero que agregues esa información", implying enrichment.
                     if ($telefono)
                         $updateData['telefono'] = $telefono;
+
+                    // Si el Logo Path viene como HTTP(s), significa que es el URL definitivo ya escrapeado
+                    if ($logoPath && filter_var($logoPath, FILTER_VALIDATE_URL) !== false) {
+                        $updateData['logo_url'] = $logoPath;
+                    }
 
                     try {
                         $cliente->update($updateData);
