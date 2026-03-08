@@ -97,33 +97,39 @@ Route::get('/catalogos/tallas', [CatalogoController::class, 'tallas']);
 // MÓDULO COMERCIAL
 // ==========================================
 
-// Oportunidades
-Route::apiResource('oportunidades', OportunidadController::class)
-    ->parameters(['oportunidades' => 'oportunidad']);
+Route::middleware('auth:sanctum')->group(function () {
+    // Oportunidades
+    Route::apiResource('oportunidades', OportunidadController::class)
+        ->parameters(['oportunidades' => 'oportunidad']);
 
-Route::patch(
-    'oportunidades/{oportunidad}/estado',
-    [OportunidadController::class, 'updateEstado']
-);
+    Route::patch(
+        'oportunidades/{oportunidad}/estado',
+        [OportunidadController::class, 'updateEstado']
+    );
 
-Route::get('oportunidades/{oportunidad}/gestiones', [\App\Http\Controllers\Api\OportunidadGestionController::class, 'index']);
-Route::post('oportunidades/{oportunidad}/gestiones', [\App\Http\Controllers\Api\OportunidadGestionController::class, 'store']);
+    Route::get('oportunidades/{oportunidad}/gestiones', [\App\Http\Controllers\Api\OportunidadGestionController::class, 'index']);
+    Route::post('oportunidades/{oportunidad}/gestiones', [\App\Http\Controllers\Api\OportunidadGestionController::class, 'store']);
+    Route::post('oportunidades/{oportunidad}/pasar-a-venta', [OportunidadController::class, 'pasarAVenta']);
 
-// Estados
-Route::get('/estados', [EstadoController::class, 'index']);
+    // Estados
+    Route::get('/estados', [EstadoController::class, 'index']);
 
-// Ejecutivos
-Route::get('/ejecutivos', [UserController::class, 'ejecutivos']);
+    // Ejecutivos
+    Route::get('/ejecutivos', [UserController::class, 'ejecutivos']);
 
-// Clientes
-Route::apiResource('clientes', ClienteController::class);
-Route::post('/clientes/{cliente}/logo', [ClienteController::class, 'uploadLogo']);
+    // Clientes
+    Route::apiResource('clientes', ClienteController::class);
+    Route::post('/clientes/{cliente}/logo', [ClienteController::class, 'uploadLogo']);
 
-// Contactos
-Route::get('/clientes/{cliente}/contactos', [ContactoController::class, 'index']);
-Route::post('/contactos', [ContactoController::class, 'store']);
-Route::patch('/contactos/{contacto}', [ContactoController::class, 'update']);
-Route::delete('/contactos/{contacto}', [ContactoController::class, 'destroy']);
+    // Contactos
+    Route::get('/clientes/{cliente}/contactos', [ContactoController::class, 'index']);
+    Route::post('/contactos', [ContactoController::class, 'store']);
+    Route::patch('/contactos/{contacto}', [ContactoController::class, 'update']);
+    Route::delete('/contactos/{contacto}', [ContactoController::class, 'destroy']);
+
+    // CALENDARIO / EVENTOS (NUEVO)
+    Route::apiResource('eventos', EventoController::class);
+});
 
 // Proveedores
 //Route::apiResource('proveedores', ProveedorController::class);
@@ -132,12 +138,6 @@ Route::delete('/contactos/{contacto}', [ContactoController::class, 'destroy']);
 Route::get('/geografia/zonas', [App\Http\Controllers\GeografiaController::class, 'zonas']);
 Route::get('/geografia/regiones', [App\Http\Controllers\GeografiaController::class, 'regiones']);
 Route::get('/geografia/provincias', [App\Http\Controllers\GeografiaController::class, 'provincias']);
-
-// CALENDARIO / EVENTOS (NUEVO)
-// Es vital el middleware auth:sanctum para que funcione Auth::id() en el controlador
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('eventos', EventoController::class);
-});
 
 // AUTH - Login necesita 'web' para sesión/CSRF. Las demás usan Bearer token.
 Route::middleware('web')->group(function () {
@@ -241,7 +241,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/factory-logs', [App\Http\Controllers\Api\FactoryLogController::class, 'index']);
-Route::get('/cotizaciones/{cotizacion}/pdf', [CotizacionController::class, 'exportPdf']);
+Route::middleware('auth:sanctum')->get('/cotizaciones/{cotizacion}/pdf', [CotizacionController::class, 'exportPdf']);
 Route::get('/insumos', [App\Http\Controllers\Api\InsumoController::class, 'index']);
 
 // ==========================================
