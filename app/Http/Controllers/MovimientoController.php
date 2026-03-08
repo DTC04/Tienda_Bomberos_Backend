@@ -459,7 +459,7 @@ class MovimientoController extends Controller
                 'raw_usuario_id' => $lote->usuario_id,
                 'raw_tipo' => $lote->tipo_movimiento,
                 'fecha_hora_grupo' => \Carbon\Carbon::parse($lote->ultima_fecha)->format('d/m/Y H:i'),
-                'usuario' => $usuario ? $usuario->name : 'Usuario ID: ' . $lote->usuario_id,
+                'usuario' => $usuario ? $usuario->name : ($lote->usuario_id ? 'Usuario ID: ' . $lote->usuario_id : 'SISTEMA (Anónimo)'),
                 'tipo_movimiento' => $lote->tipo_movimiento,
                 'cotizacion_id' => $lote->cotizacion_id,
                 'cotizacion_info' => $cotizacion ? [
@@ -567,7 +567,7 @@ class MovimientoController extends Controller
 
             $reporte[] = [
                 'fecha_hora_grupo' => \Carbon\Carbon::parse($first->fecha_hora)->format('d/m/Y H:i'),
-                'usuario' => $first->usuario ? $first->usuario->name : 'Usuario ID: ' . $first->usuario_id,
+                'usuario' => $first->usuario ? $first->usuario->name : ($first->usuario_id ? 'Usuario ID: ' . $first->usuario_id : 'SISTEMA (Anónimo)'),
                 'tipo_movimiento' => $first->tipo_movimiento,
                 'cotizacion_id' => $first->cotizacion_id,
                 'cotizacion_info' => $first->cotizacion ? [
@@ -642,7 +642,7 @@ class MovimientoController extends Controller
         $reporteUnico = [
             [
                 'fecha_hora_grupo' => \Carbon\Carbon::parse($first->fecha_hora)->format('d/m/Y H:i'),
-                'usuario' => $first->usuario ? $first->usuario->name : 'Usuario ID: ' . $first->usuario_id,
+                'usuario' => $first->usuario ? $first->usuario->name : ($first->usuario_id ? 'Usuario ID: ' . $first->usuario_id : 'SISTEMA (Anónimo)'),
                 'tipo_movimiento' => $first->tipo_movimiento,
                 'cotizacion_id' => $first->cotizacion_id,
                 'cotizacion_info' => $first->cotizacion ? [
@@ -715,7 +715,7 @@ class MovimientoController extends Controller
             $first = $items->first();
             $reporte[] = [
                 'fecha_hora_grupo' => \Carbon\Carbon::parse($first->fecha_hora)->format('d/m/Y H:i'),
-                'usuario' => $first->usuario ? $first->usuario->name : 'Usuario ID: ' . $first->usuario_id,
+                'usuario' => $first->usuario ? $first->usuario->name : ($first->usuario_id ? 'Usuario ID: ' . $first->usuario_id : 'SISTEMA (Anónimo)'),
                 'tipo_movimiento' => $first->tipo_movimiento,
                 'cotizacion_id' => $first->cotizacion_id,
                 'cotizacion_info' => $first->cotizacion ? [

@@ -42,21 +42,23 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// SKU / Productos
-Route::get('/productos', [SkuController::class, 'index']);
-Route::post('/productos', [SkuController::class, 'store']);
-Route::get('/productos/{sku}', [SkuController::class, 'show']);
-Route::put('/productos/{id}', [SkuController::class, 'update']);
-Route::delete('/productos/{id}', [SkuController::class, 'destroy']);
-Route::patch('/productos/{id}/deactivate', [SkuController::class, 'deactivate']);
-//reporte de inventario 
-Route::get('/inventario', [SkuController::class, 'inventario']);
-Route::get('/inventario/reporte', [SkuController::class, 'reporteInventario']);
+Route::middleware('auth:sanctum')->group(function () {
+    // SKU / Productos
+    Route::get('/productos', [SkuController::class, 'index']);
+    Route::post('/productos', [SkuController::class, 'store']);
+    Route::get('/productos/{sku}', [SkuController::class, 'show']);
+    Route::put('/productos/{id}', [SkuController::class, 'update']);
+    Route::delete('/productos/{id}', [SkuController::class, 'destroy']);
+    Route::patch('/productos/{id}/deactivate', [SkuController::class, 'deactivate']);
 
-// Stock (legacy / obsoleto)
+    // Reporte de inventario 
+    Route::get('/inventario', [SkuController::class, 'inventario']);
+    Route::get('/inventario/reporte', [SkuController::class, 'reporteInventario']);
 
-Route::get('/stock/{sku}', [StockController::class, 'consultarStock']);
-Route::post('/stock/ingreso', [StockController::class, 'agregarStock']);
+    // Stock (legacy / obsoleto)
+    Route::get('/stock/{sku}', [StockController::class, 'consultarStock']);
+    Route::post('/stock/ingreso', [StockController::class, 'agregarStock']);
+});
 
 // MOVIMIENTOS (Protegidos)
 Route::middleware('auth:sanctum')->group(function () {
