@@ -27,7 +27,7 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email',
             'telefono' => 'nullable|string|max:20',
             'password' => 'required|string|min:6',
-            'role' => 'required|string|in:admin,superadmin,ejecutivo,vendedor,bodega,fabrica', // Ajustar roles según necesites
+            'role' => 'required|string|in:superadmin,ejecutivo,fabrica,bodega,personalizacion', // Ajustar roles según necesites
             'modulos' => 'nullable|array',
             'modulos.*' => 'string',
         ]);
@@ -62,7 +62,7 @@ class UserController extends Controller
             'email' => 'sometimes|required|email|unique:users,email,' . $user->id,
             'telefono' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:6',
-            'role' => 'sometimes|required|string',
+            'role' => 'sometimes|required|string|in:superadmin,ejecutivo,fabrica,bodega,personalizacion',
             'modulos' => 'nullable|array',
             'modulos.*' => 'string',
         ]);
@@ -98,7 +98,7 @@ class UserController extends Controller
      */
     public function ejecutivos(Request $request)
     {
-        $roles = ['ejecutivo', 'superadmin', 'comercial'];
+        $roles = ['ejecutivo', 'superadmin'];
 
         $users = User::query()
             ->select(['id', 'name', 'email', 'role'])
