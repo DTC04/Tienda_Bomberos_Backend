@@ -36,6 +36,17 @@ use App\Http\Controllers\F_MpEspecificacionController;
 use App\Http\Controllers\F_MpStockController;
 use App\Http\Controllers\MpMaterialController;
 use App\Http\Controllers\MpGestionController;
+use App\Http\Controllers\Api\CuttingOrderController;
+
+// Ordenes de Corte (Nueva implementación Fábrica)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/cutting-orders', [CuttingOrderController::class, 'index']);
+    Route::post('/cutting-orders', [CuttingOrderController::class, 'store']);
+    Route::get('/cutting-orders/next-code/generate', [CuttingOrderController::class, 'generateNextCode']);
+    Route::get('/cutting-orders/{id}', [CuttingOrderController::class, 'show']);
+    Route::put('/cutting-orders/{id}', [CuttingOrderController::class, 'update']);
+    Route::delete('/cutting-orders/{id}', [CuttingOrderController::class, 'destroy']);
+});
 
 //Auth user info
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
