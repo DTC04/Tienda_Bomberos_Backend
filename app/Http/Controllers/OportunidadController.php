@@ -96,10 +96,13 @@ class OportunidadController extends Controller
         $oportunidad = Oportunidad::create($data);
         $oportunidad->load(['cliente', 'user', 'estado']);
 
-        // Check if created with "Aprobada - Cotización"
+        // Check if created with "Aprobada - Cotización" or "Cotización Enviada"
         $cotizacionId = null;
-        if ($oportunidad->estado && trim(mb_strtolower($oportunidad->estado->nombre)) === trim(mb_strtolower('Aprobada - Cotización'))) {
-            $cotizacionId = $this->ensureCotizacionAndCliente($oportunidad);
+        if ($oportunidad->estado) {
+            $estadoNombre = trim(mb_strtolower($oportunidad->estado->nombre));
+            if ($estadoNombre === mb_strtolower('Aprobada - Cotización') || $estadoNombre === mb_strtolower('Cotización Enviada')) {
+                $cotizacionId = $this->ensureCotizacionAndCliente($oportunidad);
+            }
         }
 
         // Return additional field
@@ -213,10 +216,9 @@ class OportunidadController extends Controller
                 ]);
             }
 
-            $cotizacionId = null;
-
-            // 🔥 Gatillo: cuando pasa a "Aprobada - Cotización"
-            $isAprobadaCot = trim(mb_strtolower($estado->nombre)) === trim(mb_strtolower('Aprobada - Cotización'));
+            // 🔥 Gatillo: cuando pasa a "Aprobada - Cotización" o "Cotización Enviada"
+            $estadoNombre = trim(mb_strtolower($estado->nombre));
+            $isAprobadaCot = $estadoNombre === mb_strtolower('Aprobada - Cotización') || $estadoNombre === mb_strtolower('Cotización Enviada');
 
             if ($isAprobadaCot) {
                 $cotizacionId = $this->ensureCotizacionAndCliente($oportunidad);
