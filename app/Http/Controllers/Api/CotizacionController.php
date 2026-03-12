@@ -21,7 +21,7 @@ class CotizacionController extends Controller
 
         if ($request->filled('cliente_id')) {
             if ($request->boolean('include_children')) {
-                $clienteId = (int) $request->input('cliente_id');
+                $clienteId = $request->input('cliente_id');
                 $q->where(function ($query) use ($clienteId) {
                     $query->where('cliente_id', $clienteId)
                         ->orWhereHas('cliente', function ($c) use ($clienteId) {
@@ -29,7 +29,7 @@ class CotizacionController extends Controller
                         });
                 });
             } else {
-                $q->where('cliente_id', (int) $request->input('cliente_id'));
+                $q->where('cliente_id', $request->input('cliente_id'));
             }
         }
 
@@ -77,7 +77,7 @@ class CotizacionController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'cliente_id' => ['required', 'integer', 'exists:clientes,id'],
+            'cliente_id' => ['required', 'string', 'max:15', 'exists:clientes,id'],
             'oportunidad_id' => ['nullable', 'integer', 'exists:oportunidades,id'],
             'fecha_creacion' => ['nullable', 'date'],
             'fecha_vencimiento' => ['nullable', 'date'],
@@ -106,7 +106,7 @@ class CotizacionController extends Controller
         }
 
         $cotizacion = Cotizacion::create([
-            'cliente_id' => (int) $data['cliente_id'],
+            'cliente_id' => $data['cliente_id'],
             'oportunidad_id' => $data['oportunidad_id'] ?? null,
             'user_id' => $user->id,
             'estado_id' => $estadoDefaultId,
@@ -471,11 +471,72 @@ class CotizacionController extends Controller
     public function marcarPersonalizacionCompletada(Request $request, Cotizacion $cotizacion)
     {
         $cotizacion->personalizacion_completada = true;
+        // The user manually saves configuration inside Comercial. We mark it as 'configured'.
+        $cotizacion->estado_personalizacion = 'configured';
         $cotizacion->save();
 
         return response()->json([
             'ok' => true,
             'cotizacion' => $cotizacion->fresh()->load(['cliente.parent', 'oportunidad.contacto', 'ejecutivo', 'estado', 'detalles', 'historial', 'gestiones.user', 'ultimaGestion', 'archivos'])
         ]);
+    }
+
+    public function sendToPersonalizacion(Request $request, Cotizacion $cotizacion)
+    {
+        // 1. Validate that it's configured and ready
+        if ($cotizacion->estado_personalizacion !== 'configured') {
+            return response()->json([
+                'message' => 'La cotización no está configurada o ya fue enviada.'
+            ], 422);
+        }
+
+        // 2. Wrap in transaction
+        return DB::transaction(function () use ($cotizacion) {
+            $cot = Cotizacion::lockForUpdate()->findOrFail($cotizacion->id);
+            $botUserId = 1; // Fallback System User if Auth fails
+            $currentUserId = auth()->id() ?? $botUserId;
+
+            // 3. For every detail with a configuracion, create a Kanban card in 'pending-design' (Por Hacer)
+            $items = \App\Models\DetalleCotizacion::with([
+                'gruposPersonalizacion.tallas',
+                'gruposPersonalizacion.matrices',
+                'gruposPersonalizacion.variables'
+            ])->where('cotizacion_id', $cot->id)->get();
+            $createdCount = 0;
+
+            foreach ($items as $item) {
+                // Si el item no fue configurado (no tiene grupos), saltarlo
+                if ($item->gruposPersonalizacion->isEmpty()) {
+                    continue;
+                }
+
+                \App\Models\Personalizacion::create([
+                    'user_id' => $currentUserId,
+                    'cotizacion_id' => $cot->id,
+                    'sku' => $item->sku,
+                    'producto_nombre' => $item->producto ?? 'Personalización Desde Comercial',
+                    'cantidad' => $item->cantidad,
+                    'tipo' => 'embroidery', // Defaults to embroidery as base type, can be expanded
+                    'estado' => 'pending-design', // This corresponds to the new "Por Hacer" stage
+                    'prioridad' => 'medium',
+                    // Bundling the associated relations into the standard JSON configuracion payload for Kanban
+                    'configuracion' => [
+                        'grupos' => $item->gruposPersonalizacion->toArray()
+                    ]
+                ]);
+
+                $createdCount++;
+            }
+
+            // 4. Mark the quote as sent to hide the dispatch button
+            $cot->estado_personalizacion = 'sent_to_personalization';
+            $cot->save();
+
+            return response()->json([
+                'ok' => true,
+                'message' => "Se enviaron $createdCount ítem(s) al módulo de Personalización.",
+                'cotizacion' => $cot->fresh()->load(['cliente.parent', 'oportunidad.contacto', 'ejecutivo', 'estado', 'detalles', 'historial', 'gestiones.user', 'ultimaGestion', 'archivos'])
+            ]);
+        });
     }
 }

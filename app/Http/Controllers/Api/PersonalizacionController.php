@@ -25,9 +25,19 @@ class PersonalizacionController extends Controller
     {
         // ── 1. Sólo las columnas necesarias para las tarjetas Kanban ─────────
         $select = [
-            'id', 'pte_movimiento_id', 'cotizacion_id', 'user_id',
-            'sku', 'producto_nombre', 'cantidad', 'estado',
-            'tipo', 'prioridad', 'notas', 'created_at', 'updated_at',
+            'id',
+            'pte_movimiento_id',
+            'cotizacion_id',
+            'user_id',
+            'sku',
+            'producto_nombre',
+            'cantidad',
+            'estado',
+            'tipo',
+            'prioridad',
+            'notas',
+            'created_at',
+            'updated_at',
             // configuracion se procesa abajo para eliminar las imágenes base64 en modo slim
             'configuracion',
         ];
@@ -83,10 +93,10 @@ class PersonalizacionController extends Controller
         $items = $paginated->getCollection()->map(function ($item) use ($tallasMap, $isSlim) {
             $skuProd = $item->pteMovimiento?->skuProducto;
 
-            $item->color      = $skuProd?->color?->nombre;
-            $item->familia    = $skuProd?->familia?->nombre;
+            $item->color = $skuProd?->color?->nombre;
+            $item->familia = $skuProd?->familia?->nombre;
             $item->subfamilia = $skuProd?->subfamilia?->nombre;
-            $item->talla      = $skuProd?->talla?->nombre
+            $item->talla = $skuProd?->talla?->nombre
                 ?? $tallasMap["{$item->cotizacion_id}_{$item->sku}"]
                 ?? null;
 
@@ -102,9 +112,9 @@ class PersonalizacionController extends Controller
                         $isBase64 = $content && str_starts_with($content, 'data:');
 
                         return [
-                            'id'      => $l['id']   ?? null,
-                            'type'    => $l['type'] ?? null,
-                            'view'    => $l['view'] ?? null,
+                            'id' => $l['id'] ?? null,
+                            'type' => $l['type'] ?? null,
+                            'view' => $l['view'] ?? null,
                             // Mantener URL corta; descartar base64 pesado
                             'content' => $isBase64 ? null : $content,
                         ];
@@ -132,11 +142,11 @@ class PersonalizacionController extends Controller
         });
 
         return response()->json([
-            'data'          => $items,
-            'current_page'  => $paginated->currentPage(),
-            'last_page'     => $paginated->lastPage(),
-            'per_page'      => $paginated->perPage(),
-            'total'         => $paginated->total(),
+            'data' => $items,
+            'current_page' => $paginated->currentPage(),
+            'last_page' => $paginated->lastPage(),
+            'per_page' => $paginated->perPage(),
+            'total' => $paginated->total(),
         ]);
     }
 
@@ -199,10 +209,10 @@ class PersonalizacionController extends Controller
 
         // Append computed convenience fields (same as index)
         $skuProd = $item->pteMovimiento?->skuProducto;
-        $item->color      = $skuProd?->color?->nombre;
-        $item->familia    = $skuProd?->familia?->nombre;
+        $item->color = $skuProd?->color?->nombre;
+        $item->familia = $skuProd?->familia?->nombre;
         $item->subfamilia = $skuProd?->subfamilia?->nombre;
-        $item->talla      = $skuProd?->talla?->nombre;
+        $item->talla = $skuProd?->talla?->nombre;
 
         return response()->json($item);
     }
@@ -217,11 +227,11 @@ class PersonalizacionController extends Controller
     public function uploadAsset(Request $request)
     {
         $request->validate([
-            'file'               => 'required|file|image|max:5120', // máx 5 MB
+            'file' => 'required|file|image|max:5120', // máx 5 MB
             'personalizacion_id' => 'required|integer|exists:personalizaciones,id',
         ]);
 
-        $id   = $request->personalizacion_id;
+        $id = $request->personalizacion_id;
         $path = $request->file('file')->store("personalizaciones/{$id}", 'public');
 
         return response()->json([
@@ -251,7 +261,7 @@ class PersonalizacionController extends Controller
             'producto_nombre' => $request->producto_nombre,
             'cantidad' => $request->cantidad,
             'tipo' => $request->tipo,
-            'estado' => 'pending-definition', // Estado inicial cambiado para el nuevo flujo
+            'estado' => 'pending-design', // Nuevo estado inicial (Por Hacer)
             'prioridad' => $request->prioridad ?? 'medium',
             'notas' => $request->notas,
             'configuracion' => $request->configuracion ?? [] // JSON

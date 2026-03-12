@@ -28,6 +28,7 @@ class Cotizacion extends Model
         'origen',
         'fecha_rechazo',
         'motivo_rechazo',
+        'estado_personalizacion',
     ];
 
     protected $casts = [

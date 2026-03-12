@@ -8,7 +8,12 @@ class Cliente extends Model
 {
     protected $table = 'clientes';
 
+    // The primary key is now a string and not auto-incrementing
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected $fillable = [
+        'id', // Need to make it fillable since it's manually assigned
         'nombre_empresa',
         'rut_empresa',
         'logo_url',
@@ -27,6 +32,8 @@ class Cliente extends Model
         'region_id',
         'provincia_id',
         'parent_id',
+        'cuerpo_id',
+        'compania_id',
     ];
 
     public function region()
@@ -52,5 +59,15 @@ class Cliente extends Model
     public function contactos()
     {
         return $this->hasMany(Contacto::class);
+    }
+
+    public function cuerpo()
+    {
+        return $this->belongsTo(Cuerpo::class, 'cuerpo_id');
+    }
+
+    public function compania()
+    {
+        return $this->belongsTo(Compania::class, 'compania_id');
     }
 }

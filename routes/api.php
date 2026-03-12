@@ -142,6 +142,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // CALENDARIO / EVENTOS (NUEVO)
     Route::apiResource('eventos', EventoController::class);
+
+    // Cuerpos y Compañias
+    Route::apiResource('cuerpos', \App\Http\Controllers\CuerpoController::class);
+    Route::apiResource('companias', \App\Http\Controllers\CompaniaController::class);
 });
 
 // Proveedores
@@ -244,6 +248,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/cotizaciones/{cotizacion}', [CotizacionController::class, 'destroy']);
     Route::patch('/cotizaciones/{cotizacion}/estado', [CotizacionController::class, 'updateEstado']);
     Route::patch('/cotizaciones/{cotizacion}/personalizacion-completada', [CotizacionController::class, 'marcarPersonalizacionCompletada']);
+    Route::post('/cotizaciones/{cotizacion}/send-personalizacion', [CotizacionController::class, 'sendToPersonalizacion']);
     Route::post('/cotizaciones/{cotizacion}/gestion', [CotizacionController::class, 'storeGestion']);
     Route::post('/cotizaciones/{cotizacion}/archivos', [CotizacionController::class, 'uploadArchivo']);
 

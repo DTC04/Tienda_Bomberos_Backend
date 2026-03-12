@@ -101,7 +101,7 @@ class CotizacionUpdateRequest extends FormRequest
     {
         return [
             'oportunidad_id' => ['sometimes', 'nullable', 'integer', 'exists:oportunidades,id'],
-            'cliente_id' => ['sometimes', 'integer', 'exists:clientes,id'],
+            'cliente_id' => ['sometimes', 'string', 'max:15', 'exists:clientes,id'],
             'ejecutivo_id' => ['sometimes', 'integer', 'exists:ejecutivos,id'],
             'estado_id' => ['sometimes', 'integer', 'exists:estados,id'],
 

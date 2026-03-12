@@ -22,9 +22,9 @@ class OportunidadController extends Controller
 
         $query = Oportunidad::query()
             ->with(['cliente', 'contacto', 'user', 'estado', 'historial', 'ultima_gestion'])
-            ->when($request->filled('estado_id'), fn($q) => $q->where('estado_id', $request->integer('estado_id')))
-            ->when($request->filled('cliente_id'), fn($q) => $q->where('cliente_id', $request->integer('cliente_id')))
-            ->when($request->filled('user_id'), fn($q) => $q->where('user_id', $request->integer('user_id')))
+            ->when($request->filled('estado_id'), fn($q) => $q->where('estado_id', $request->input('estado_id')))
+            ->when($request->filled('cliente_id'), fn($q) => $q->where('cliente_id', $request->input('cliente_id')))
+            ->when($request->filled('user_id'), fn($q) => $q->where('user_id', $request->input('user_id')))
             ->when($request->boolean('exclude_has_quotation'), fn($q) => $q->doesntHave('cotizaciones'))
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = trim((string) $request->query('q'));
@@ -51,7 +51,7 @@ class OportunidadController extends Controller
             'numero_contacto' => ['nullable', 'string', 'max:30'],
             'cargo_contacto' => ['nullable', 'string', 'max:150'],
             'empresa' => ['nullable', 'string', 'max:150'],
-            'cliente_id' => ['nullable', 'integer', 'exists:clientes,id'],
+            'cliente_id' => ['nullable', 'string', 'max:15', 'exists:clientes,id'],
             'contacto_id' => ['nullable', 'integer', 'exists:contactos,id'],
             'referido_por' => ['nullable', 'string', 'max:150'],
 
@@ -135,7 +135,7 @@ class OportunidadController extends Controller
             'numero_contacto' => ['sometimes', 'nullable', 'string', 'max:30'],
             'empresa' => ['sometimes', 'nullable', 'string', 'max:150'],
             'referido_por' => ['sometimes', 'nullable', 'string', 'max:150'],
-            'cliente_id' => ['sometimes', 'nullable', 'integer', 'exists:clientes,id'],
+            'cliente_id' => ['sometimes', 'nullable', 'string', 'max:15', 'exists:clientes,id'],
             'contacto_id' => ['sometimes', 'nullable', 'integer', 'exists:contactos,id'],
 
             'user_id' => [
@@ -236,15 +236,31 @@ class OportunidadController extends Controller
     {
         // 1) Asegurar cliente
         if (!$oportunidad->cliente_id) {
+            $maxId = \Illuminate\Support\Facades\DB::table('clientes')
+                ->whereRaw('LENGTH(id) < 7')
+                ->max(\Illuminate\Support\Facades\DB::raw('CAST(id AS UNSIGNED)'));
+
+            $nextId = $maxId ? $maxId + 1 : 1;
+
             $cliente = Cliente::create([
+                'id' => (string) $nextId,
                 'nombre_empresa' => $oportunidad->empresa,
-                'nombre_contacto' => $oportunidad->nombre_contacto,
                 'telefono' => $oportunidad->numero_contacto,
                 'correo' => null,
                 'fecha_ingreso' => now()->toDateString(),
             ]);
 
             $oportunidad->cliente_id = $cliente->id;
+
+            if (!empty($oportunidad->nombre_contacto)) {
+                $contacto = \App\Models\Contacto::create([
+                    'cliente_id' => $cliente->id,
+                    'nombre' => $oportunidad->nombre_contacto,
+                    'telefono' => $oportunidad->numero_contacto,
+                ]);
+                $oportunidad->contacto_id = $contacto->id;
+            }
+
             $oportunidad->save();
         }
 
